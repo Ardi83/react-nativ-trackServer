@@ -1,15 +1,35 @@
+require('./models/User');
+require('./models/Track');
 const express = require('express');
 const mongoose = require('mongoose');
-require('dotenv').config()
+
 const mongoUrl = require('../config').mongoURL;
+const requireAuth = require('./middlewares/requireAuth');
+
+const authRoutes = require('./routes/authRoutes');
+const trackRoutes = require('./routes/trackRoutes');
 
 const app = express();
+app.use(express.json())
 
-mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true })
+app.use(authRoutes);
+app.use(trackRoutes);
+
+mongoose.connect(
+  mongoUrl, 
+  { useNewUrlParser: true, 
+    useCreateIndex: true, 
+    useUnifiedTopology: true 
+  }
+)
+
 mongoose.connection.on('connected', () => console.log('connected to db'))
 mongoose.connection.on('error', (err) => console.error(err))
 
 
-app.get('/', (req, res) => res.send( JSON.stringify({"msg": "express and route is work "})) )
+app.get('/', requireAuth, (req, res) => {
+  res.send(`Your email: ${req.user.email}`)
+})
 
-app.listen(3000, () => console.log('Listening to 3000') )
+const PORT = process.env.environment === 'development' ? 3000 : process.env.production;
+app.listen(PORT, () => console.log(`Listening to ${PORT}`));

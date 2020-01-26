@@ -1,6 +1,6 @@
 require('dotenv').config();
 
 module.exports = {
-  mongoURL: `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_NAME}/test?retryWrites=true&w=majority`
+  mongoURL: `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_NAME}/test?retryWrites=true&w=majority`,
+  jwtSecret: `${process.env.JWT_SECRET_KEY}`
 }
-// mongodb+srv://ardashir:<password>@track-server-nykaq.mongodb.net/test?retryWrites=true&w=majority
