@@ -9,11 +9,12 @@ const router = express.Router();
 router.post('/signup', async (req, res) => {
   try {
     const { email, password } = req.body;
+    const ifUser = await User.findOne({ email })
+    if (ifUser) throw new Error('This email is registered before')
     const user = new User({ email, password })
     await user.save();
     const token = jwt.sign({ userId: user._id}, jwtSecret)
-    res.send(token)
-    res.send('You made a post request')
+    res.send({token})
   } catch (error) {
     res.status(422).send(error.message)
   }
