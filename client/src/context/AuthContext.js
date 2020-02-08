@@ -3,36 +3,44 @@ import tracker from '../api/tracker'
 import createDataContext from './createDataContext'
 import { navigate } from '../navigationRef'
 
-
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'ADD_ERROR':
       return {
         ...state,
         errorMessage: action.payload
-      } 
+      }
     case 'SIGNIN':
     case 'SIGNUP':
       return {
         errorMessage: '',
         token: action.payload
-      };
-    case 'SIGNUP_FAIL':
-      return ''
+      }
+    case 'CLEAR_ERROR_MESSAGE':
+      return { ...state, errorMessage: '' }
+    case 'SIGNOUT':
+      return { token: '', errorMessage: '' }
     default:
       return state;
   }
 }
 
 const signin = dispatch => async ({email, password}) => {
-  const res = await axios.post('http://localhost:3000/signin', {email, password})
-  dispatch({ type: 'SIGNIN', payload: res.data })
+  try {
+    const res = await tracker.post('/signin', {email, password})
+    await AsyncStorage.setItem('token', res.data.token)
+    dispatch({ type: 'SIGNIN', payload: res.data.token })
+    
+    navigate('TrackList')
+  } catch (error) {
+    dispatch({ type: 'ADD_ERROR', payload: error.response.data })
+  }
 }
 
 const signup = dispatch => async ({email, password}) => {
   try {
     const res = await tracker.post(`/signup`, {email, password})
-    await AsyncStorage.setItem('token', res.data.token);
+    await AsyncStorage.setItem('token', res.data.token)
     dispatch({ type: 'SIGNUP', payload: res.data.token })
 
     navigate('TrackList');
@@ -42,12 +50,28 @@ const signup = dispatch => async ({email, password}) => {
   }
 }
 
-const signout = dispatch => async () => {
-  dispatch({ type: 'SIGNOUT' })
+const clearErrorMessage = dispatch => () => {
+  dispatch({ type: 'CLEAR_ERROR_MESSAGE' })
 }
 
-export const { Provider, Context } = createDataContext(
+const tryLocalSignin = dispatch => async () => {
+  const token = await AsyncStorage.getItem('token')
+  if (token) {
+    dispatch({ type: 'SIGNIN', payload: token })
+    navigate('TrackList')
+  } else {
+    navigate('Signin')
+  }
+}
+
+const signout = dispatch => async () => {
+  await AsyncStorage.removeItem('token')
+  dispatch({ type: 'SIGNOUT' })
+  navigate('loginFlow')
+}
+
+export const  { Provider, Context } = createDataContext(
   authReducer,
-  { signup, signin },
+  { signup, signin, clearErrorMessage, tryLocalSignin, signout },
   { token: '', errorMessage: '' }
 )
