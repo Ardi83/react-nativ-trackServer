@@ -31,5 +31,7 @@ app.get('/', requireAuth, (req, res) => {
   res.send(`Your email: ${req.user.email}`)
 })
 
-const PORT = process.env.environment === 'development' ? 3000 : process.env.production;
-app.listen(PORT, () => console.log(`Listening to ${PORT}`));
+const PORT = process.env.PORT || 3434; 
+const HOST = '0.0.0.0';
+
+app.listen(PORT, HOST,  () => console.log(`Listening to ${PORT}`));

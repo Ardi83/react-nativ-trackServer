@@ -39,7 +39,7 @@ const signin = dispatch => async ({email, password}) => {
 
 const signup = dispatch => async ({email, password}) => {
   try {
-    const res = await tracker.post(`/signup`, {email, password})
+    const res = await tracker.post(`/signup`, {email, password}) // axios.post('http://localhost:3434/signup', {data})
     await AsyncStorage.setItem('token', res.data.token)
     dispatch({ type: 'SIGNUP', payload: res.data.token })
 
